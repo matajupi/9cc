@@ -5,6 +5,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+// kind of abstract syntax tree node
+typedef enum {
+    ND_ADD, // +
+    ND_SUB, // -
+    ND_MUL, // *
+    ND_DIV, // /
+    ND_NUM, // Integer
+} NodeKind;
+
+typedef struct Node Node;
+
+// type of abstract syntax tree node
+struct Node {
+    NodeKind kind; // node type
+    Node *lhs;     // left side
+    Node *rhs;     // right side
+    int val;       // use only when kind is ND_NUM
+};
+
 // トークンの種類
 typedef enum {
     TK_RESERVED, // 記号
@@ -80,6 +99,57 @@ int expect_number() {
 
 bool at_eof() {
     return token->kind == TK_EOF;
+}
+
+Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = kind;
+    node->lhs = lhs;
+    node->rhs = rhs;
+    return node;
+}
+
+Node *new_node_num(int val) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_NUM;
+    node->val = val;
+    return node;
+}
+
+Node *primary() {
+    // if next token is "(", it is maybe "(" expr ")"
+    if (consume('(')) {
+        Node *node = expr();
+        expect(')');
+        return node;
+    }
+    // else it is maybe integer
+    return new_node_num(expect_number());
+}
+
+Node *mul() {
+    Node *node = primary();
+
+    for (;;) {
+        if (consume('*'))
+            node = new_node(ND_MUL, node, primary());
+        else if (consume('/'))
+            node = new_node(ND_DIV, ndoe, primary());
+        else
+            return node;
+    }
+}
+
+Node *expr() {
+    Node *node = mul();
+    for (;;) {
+        if (consume('+'))
+            node = new_node(ND_ADD, node, mul());
+        else if (consume('-'))
+            node = new_node(ND_SUB, node, mul());
+        else
+            return node;
+    }
 }
 
 // 新しいトークンを作成してcurにつなげる
