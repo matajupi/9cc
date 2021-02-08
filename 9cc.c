@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// kind of abstract syntax tree node
+// type of abstract syntax tree node
 typedef enum {
     ND_ADD, // +
     ND_SUB, // -
@@ -16,7 +16,7 @@ typedef enum {
 
 typedef struct Node Node;
 
-// type of abstract syntax tree node
+// abstract syntax tree node
 struct Node {
     NodeKind kind; // node type
     Node *lhs;     // left side
@@ -26,9 +26,9 @@ struct Node {
 
 // トークンの種類
 typedef enum {
-    TK_RESERVED, // 記号
-    TK_NUM,      // 整数トークン
-    TK_EOF,      // 入力の終わりを表すトークン
+    TK_RESERVED, // Symbol
+    TK_NUM,      // Number
+    TK_EOF,      // End of file
 } TokenKind;
 
 typedef struct Token Token;
@@ -101,6 +101,7 @@ bool at_eof() {
     return token->kind == TK_EOF;
 }
 
+
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
@@ -116,17 +117,22 @@ Node *new_node_num(int val) {
     return node;
 }
 
+Node *expr();
+Node *mul();
+Node *primary();
+
+// primary = num | "(" expr ")"
 Node *primary() {
-    // if next token is "(", it is maybe "(" expr ")"
     if (consume('(')) {
         Node *node = expr();
         expect(')');
         return node;
     }
-    // else it is maybe integer
-    return new_node_num(expect_number());
+    Node *node = new_node_num(expect_number());
+    return node;
 }
 
+// mul = primary ("*" primary | "/" primary)*
 Node *mul() {
     Node *node = primary();
 
@@ -134,14 +140,16 @@ Node *mul() {
         if (consume('*'))
             node = new_node(ND_MUL, node, primary());
         else if (consume('/'))
-            node = new_node(ND_DIV, ndoe, primary());
+            node = new_node(ND_DIV, node, primary());
         else
             return node;
     }
 }
 
+// expr = mul ("+" mul | "-" mul)*
 Node *expr() {
     Node *node = mul();
+
     for (;;) {
         if (consume('+'))
             node = new_node(ND_ADD, node, mul());
@@ -161,25 +169,24 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
     return tok;
 }
 
-// 入力文字列pをトークナイズしてそれを返す
-Token *tokenize() {
-    char *p = user_input;
+// Tokenize 1line and return linking list
+Token *tokenize(char *p) {
     Token head; // 先頭のトークン
     head.next = NULL;
     Token *cur = &head;
 
     while (*p) {
-        // スペースをスキップ
+        // Skip space
         if (isspace(*p)) {
             p++;
             continue;
         }
-
-        if (*p == '+' || *p == '-') {
+        // Reserved symbol
+        if (strchr("+-*/()", *p)) {
             cur = new_token(TK_RESERVED, cur, p++);
             continue;
         }
-
+        // Number
         if (isdigit(*p)) {
             cur = new_token(TK_NUM, cur, p);
             cur->val = strtol(p, &p, 10);
@@ -188,9 +195,40 @@ Token *tokenize() {
 
         error_at(p, "トークナイズできません");
     }
-
+    // End of file
     new_token(TK_EOF, cur, p);
     return head.next;
+}
+
+void gen(Node *node) {
+    if (node->kind == ND_NUM) {
+        printf("    push %d\n", node->val);
+        return;
+    }
+
+    gen(node->lhs);
+    gen(node->rhs);
+
+    printf("    pop rdi\n");
+    printf("    pop rax\n");
+
+    switch (node->kind) {
+    case ND_ADD:
+        printf("    add rax, rdi\n");
+        break;
+    case ND_SUB:
+        printf("    sub rax, rdi\n");
+        break;
+    case ND_MUL:
+        printf("    imul rax, rdi\n");
+        break;
+    case ND_DIV:
+        printf("    cqo\n");
+        printf("    idiv rdi\n");
+        break;
+    }
+
+    printf("    push rax\n");
 }
 
 int main(int argc, char **argv) {
@@ -199,29 +237,21 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // トークナイズする
+    // tokenize and parse
     user_input = argv[1];
-    token = tokenize();
+    token = tokenize(user_input);
+    Node *node = expr();
 
     /// アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
     printf(".globl main\n");
     printf("main:\n");
+    
+    // generate code from abstract syntax tree
+    gen(node);
 
-    // 式の最初は数でなければならないのでそれをチェックして
-    // mov命令を出力
-    printf("    mov rax, %d\n", expect_number());
-
-    // + <数> あるいは - <数>というトークンの並びを消費しつつアセンブルを出力
-    while (!at_eof()) {
-        if (consume('+')) {
-            printf("    add rax, %d\n", expect_number());
-            continue;
-        }
-        expect('-');
-        printf("    sub rax, %d\n", expect_number());
-    }
-
+    // load rax from top of stack
+    printf("    pop rax\n");
     printf("    ret\n");
     return 0;
 }
