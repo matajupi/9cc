@@ -120,6 +120,15 @@ Node *new_node_num(int val) {
 Node *expr();
 Node *mul();
 Node *primary();
+Node *unary();
+
+Node *unary() {
+    if (consume("+"))
+        return primary();
+    if (consume("-"))
+        return new_node(ND_SUB, new_node_num(0), primary());
+    return primary();
+}
 
 // primary = num | "(" expr ")"
 Node *primary() {
