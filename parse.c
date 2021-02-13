@@ -2,7 +2,7 @@
 
 // 次のトークンが期待している記号の時にはトークンを１つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
-bool consume(char *op) {
+static bool consume(char *op) {
     if (token->kind != TK_RESERVED ||
         strlen(op) != token->len ||
         memcmp(token->str, op, token->len))
@@ -13,7 +13,7 @@ bool consume(char *op) {
 
 // 次のトークンが期待している記号の時には、トークンを１つ読み進める
 // それ以外の場合にはエラーを報告する。
-void expect(char *op) {
+static void expect(char *op) {
     if (token->kind != TK_RESERVED ||
         strlen(op) != token->len ||
         memcmp(token->str, op, token->len))
@@ -23,7 +23,7 @@ void expect(char *op) {
 
 // 次のトークンが数値の場合、トークンを1つ読み進めてその数値を返す
 // それ以外の場合にはエラーを報告する
-int expect_number() {
+static int expect_number() {
     if (token->kind != TK_NUM)
         error_at(token->str, "数ではありません");
     int val = token->val;
@@ -32,14 +32,14 @@ int expect_number() {
 }
 
 // If token-> kind is TK_EOF
-bool at_eof() {
+static bool at_eof() {
     return token->kind == TK_EOF;
 }
 
-Node *new_node(NodeKind, Node*, Node*);
-Node *new_node_num(int);
+static Node *new_node(NodeKind, Node*, Node*);
+static Node *new_node_num(int);
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
+static Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
     node->lhs = lhs;
@@ -47,7 +47,7 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     return node;
 }
 
-Node *new_node_num(int val) {
+static Node *new_node_num(int val) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_NUM;
     node->val = val;
