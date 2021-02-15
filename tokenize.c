@@ -44,6 +44,7 @@ static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 }
 
 void tokenize(char *p);
+static bool is_var(char c);
 
 // Tokenize 1line and return linking list
 void tokenize(char *p) {
@@ -78,9 +79,12 @@ void tokenize(char *p) {
             cur->len = p - q;
             continue;
         }
-        // Identifier
-        if ('a' <= *p && *p <= 'z') {
-            cur = new_token(TK_IDENT, cur, p++, 1);
+        // Identifier (OK)
+        if (is_var(*p)) {
+            int len = 1;
+            cur = new_token(TK_IDENT, cur, p++, len);
+            for (; is_var(*p) || '0' <= *p && *p <= '9'; p++) len++;
+            cur->len = len;
             continue;
         }
 
@@ -89,4 +93,10 @@ void tokenize(char *p) {
     // End of file
     new_token(TK_EOF, cur, p, 0);
     token = head.next;
+}
+
+static bool is_var(char c) {
+    return ('a' <= c && c <= 'z' ||
+            'A' <= c && c <= 'Z' ||
+            c == '_');
 }

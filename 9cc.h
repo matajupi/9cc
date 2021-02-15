@@ -51,11 +51,27 @@ struct Token {
     int len;        // Length of token
 };
 
+typedef struct LVar LVar;
+
+// Type of Local variable.
+struct LVar {
+    LVar *next; // Next variable or NULL
+    char *name; // Name
+    int len;    // Length of name
+    int offset; //Offset from RBP
+};
+
+// Local variable.
+extern LVar *locals;
+
 // Input program
 extern char *user_input;
 
 // Current token
 extern Token *token;
+
+// code
+extern Node *code[];
 
 // Reports error and exit
 extern void error(char *fmt, ...);
@@ -71,6 +87,3 @@ extern void program();
 
 // Generate assembly from node
 extern void gen(Node *node);
-
-// code
-extern Node *code[];

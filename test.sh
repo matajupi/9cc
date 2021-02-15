@@ -52,4 +52,8 @@ assert 5 "b=5;"
 assert 10 "b = 5; c = b * 2;"
 assert 100 "b = 10; c = b * 100; d = c / b;"
 
+assert 10 "num = 10;"
+assert 20 "num = 10; ans = num * 2;"
+assert 90 "num = 100; sub = 10; ans = num - sub;"
+
 echo OK
