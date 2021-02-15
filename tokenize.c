@@ -1,5 +1,9 @@
 #include "9cc.h"
 
+void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
+static bool startswith(char *p, char *q);
+
 // Report error and exit
 void error(char *fmt, ...) {
     va_list ap;
@@ -27,6 +31,8 @@ static bool startswith(char *p, char *q) {
     return memcmp(p, q, strlen(q)) == 0;
 }
 
+static Token *new_token(TokenKind kind, Token *cur, char *str, int len);
+
 // 新しいトークンを作成してcurにつなげる
 static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
     Token *tok = calloc(1, sizeof(Token));
@@ -37,8 +43,10 @@ static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
     return tok;
 }
 
+void tokenize(char *p);
+
 // Tokenize 1line and return linking list
-Token *tokenize(char *p) {
+void tokenize(char *p) {
     Token head; // 先頭のトークン
     head.next = NULL;
     Token *cur = &head;
@@ -57,7 +65,7 @@ Token *tokenize(char *p) {
                 continue;
         }
         // Single-letter punctuator
-        if (strchr("+-*/()<>", *p)) {
+        if (strchr("+-*/()<>;=", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
@@ -67,7 +75,12 @@ Token *tokenize(char *p) {
             char *q = p;
             cur->val = strtol(p, &p, 10);
             // Judge number length at strtol and update p and seek number length
-            cur->len = p - q; 
+            cur->len = p - q;
+            continue;
+        }
+        // Identifier
+        if ('a' <= *p && *p <= 'z') {
+            cur = new_token(TK_IDENT, cur, p++, 1);
             continue;
         }
 
@@ -75,5 +88,5 @@ Token *tokenize(char *p) {
     }
     // End of file
     new_token(TK_EOF, cur, p, 0);
-    return head.next;
+    token = head.next;
 }

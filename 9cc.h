@@ -16,6 +16,8 @@ typedef enum {
     ND_NE,  // !=
     ND_LT,  // <
     ND_LE,  // <=
+    ND_ASSIGN, // =
+    ND_LVAR, // Lcoal variable
     ND_NUM, // Integer
 } NodeKind;
 
@@ -26,12 +28,14 @@ struct Node {
     NodeKind kind; // node type
     Node *lhs;     // left side
     Node *rhs;     // right side
-    int val;       // use only when kind is ND_NUM
+    int val;       // Use only when kind is ND_NUM
+    int offset;    // Use only when kind is ND_LVAR
 };
 
 // Type of token
 typedef enum {
     TK_RESERVED, // Symbol
+    TK_IDENT,    // Identifier
     TK_NUM,      // Number
     TK_EOF,      // End of file
 } TokenKind;
@@ -60,10 +64,13 @@ extern void error(char *fmt, ...);
 extern void error_at(char *loc, char *fmt, ...);
 
 // Tokenize
-extern Token *tokenize(char *p);
+extern void tokenize(char *p);
 
 // Get expression node in current token
-extern Node *expr();
+extern void program();
 
 // Generate assembly from node
 extern void gen(Node *node);
+
+// code
+extern Node *code[];

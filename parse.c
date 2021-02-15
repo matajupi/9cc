@@ -11,6 +11,14 @@ static bool consume(char *op) {
     return true;
 }
 
+static Token *consume_ident() {
+    if (token->kind != TK_IDENT)
+        return NULL;
+    Token *retval = token;
+    token = token->next;
+    return retval;
+}
+
 // 次のトークンが期待している記号の時には、トークンを１つ読み進める
 // それ以外の場合にはエラーを報告する。
 static void expect(char *op) {
@@ -54,17 +62,45 @@ static Node *new_node_num(int val) {
     return node;
 }
 
-// Node *expr();
+void program();
+Node *stmt();
+Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
 Node *mul();
-Node *primary();
 Node *unary();
+Node *primary();
 
-// expr = equality
+Node *code[100];
+
+// program = expr*
+void program() {
+    int i = 0;
+    while (!at_eof())
+        code[i++] = stmt();
+    code[i] = NULL;
+}
+
+// stmt = expr ";"
+Node *stmt() {
+    Node *node = expr();
+    expect(";");
+    return node;
+}
+
+// expr = assign
 Node *expr() {
-    return equality();
+    return assign();
+}
+
+// assign = equality ("=" assign)?
+Node *assign() {
+    Node *node = equality();
+    if (consume("="))
+        node = new_node(ND_ASSIGN, node, assign());
+    return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -126,17 +162,6 @@ Node *mul() {
     }
 }
 
-// primary = num | "(" expr ")"
-Node *primary() {
-    if (consume("(")) {
-        Node *node = expr();
-        expect(")");
-        return node;
-    }
-    Node *node = new_node_num(expect_number());
-    return node;
-}
-
 // unary = ("+" | "-")* primary
 Node *unary() {
     if (consume("+"))
@@ -145,4 +170,22 @@ Node *unary() {
         // 0 - num
         return new_node(ND_SUB, new_node_num(0), unary());
     return primary();
+}
+
+// primary = num | ident | "(" expr ")"
+Node *primary() {
+    if (consume("(")) {
+        Node *node = expr();
+        expect(")");
+        return node;
+    }
+    Token *tok = consume_ident();
+    if (tok) { 
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+        node->offset = (tok->str[0] - 'a' + 1) * 8;
+        return node;
+    }
+    Node *node = new_node_num(expect_number());
+    return node;
 }

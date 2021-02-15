@@ -11,19 +11,32 @@ int main(int argc, char **argv) {
 
     // tokenize and parse
     user_input = argv[1];
-    token = tokenize(user_input);
-    Node *node = expr();
+    tokenize(user_input);
+    program();
 
     /// アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
     printf(".globl main\n");
     printf("main:\n");
+
+    // Prologue
+    // Reserve space for 26 variables
+    printf("    push rbp\n");
+    // ベースポインタにスタックポインタの値をムーブする
+    printf("    mov rbp, rsp\n");
+    printf("    sub rsp, 208\n");
     
     // generate code from abstract syntax tree
-    gen(node);
+    for (int i = 0; code[i]; i++) {
+        gen(code[i]);
+        // 評価結果のスタックをポップ
+        printf("    pop rax\n");
+    }
 
-    // load rax from top of stack
-    printf("    pop rax\n");
+    // Epilogue
+    // スタックポインタにベースポインタの値をムーブする
+    printf("    mov rsp, rbp\n");
+    printf("    pop rbp\n");
     printf("    ret\n");
     return 0;
 }
