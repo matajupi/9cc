@@ -63,5 +63,12 @@ assert 100 "return 10 * 10;"
 
 assert 10 "if (1) return 10; return 3;"
 assert 10 "if (0) return 9; return 10;"
+assert 1 "num = 10; if (num == 10) return 1; return 3;"
+
+assert 10 "if (0) return 1; else return 10;"
+assert 10 "num = 10; if (num == 3) return 3; else if (num == 10) return 10; return 0;"
+assert 10 "num = 10; if (num == 3) return 3; else if (num == 4) return 4; else if (num == 5) return 5; else return num;"
+assert 10 "num = 10; if (num > 0) if (num == 1) return 1; else return 10;"
+assert 10 "num = 10; if (num > 0) if (num == 10) return 10;"
 
 echo OK

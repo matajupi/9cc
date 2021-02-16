@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-long if_unique_number = 0;
+int unique_number = 0;
 
 static void gen_lval(Node *node) {
     if (node->kind != ND_LVAR)
@@ -13,6 +13,7 @@ static void gen_lval(Node *node) {
 }
 
 void gen(Node *node) {
+    int pnum;
     switch (node->kind) {
     case ND_NUM:
         printf("    push %d\n", node->val);
@@ -46,12 +47,20 @@ void gen(Node *node) {
         printf("    ret \n");
         return;
     case ND_IF:
+        pnum = unique_number++;
         gen(node->lhs);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
-        printf("    je .Lend%ld\n", if_unique_number);
+        printf("    je .Lelse%d\n", pnum);
         gen(node->rhs);
-        printf(".Lend%ld:\n", if_unique_number++);
+        printf("    jmp .Lend%d\n", pnum);
+        printf(".Lelse%d:\n", pnum);
+        if (node->rel)
+            gen(node->rel);
+        printf(".Lend%d:\n", pnum);
+        return;
+    case ND_ELSE:
+        gen(node->lhs);
         return;
     }
 

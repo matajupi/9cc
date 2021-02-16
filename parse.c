@@ -97,7 +97,7 @@ void program() {
 }
 
 // stmt = expr ";"
-//      | "if" "(" expr ")" stmt //("else" stmt)?
+//      | "if" "(" expr ")" stmt ("else" stmt)?
 //      //| "while" "(" expr ")" stmt
 //      //| "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      //| "return" expr ";"
@@ -113,6 +113,13 @@ Node *stmt() {
         node->kind = ND_IF;
         node->lhs = expr();
         node->rhs = stmt();
+        node->rel = NULL;
+        if (consume_type(TK_ELSE)) {
+            Node *rel = calloc(1, sizeof(Node));
+            rel->kind = ND_ELSE;
+            rel->lhs = stmt();
+            node->rel = rel;
+        }
         return node;
     } else {
         node = expr();
