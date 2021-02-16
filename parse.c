@@ -99,7 +99,7 @@ void program() {
 // stmt = expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
-//      //| "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      //| "return" expr ";"
 Node *stmt() {
     Node *node ;
@@ -111,7 +111,9 @@ Node *stmt() {
     } else if (consume_type(TK_IF)) {
         node = calloc(1, sizeof(Node));
         node->kind = ND_IF;
+        expect("(");
         node->lhs = expr();
+        expect(")");
         node->rhs = stmt();
         node->rel = NULL;
         if (consume_type(TK_ELSE)) {
@@ -124,7 +126,33 @@ Node *stmt() {
     } else if (consume_type(TK_WHILE)) {
         node = calloc(1, sizeof(Node));
         node->kind = ND_WHILE;
+        expect("(");
         node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
+        return node;
+    } else if (consume_type(TK_FOR)) {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_FOR;
+        expect("(");
+        if (consume(";")) {
+            node->lhs = NULL;
+        } else {
+            node->lhs = expr();
+            expect(";");
+        }
+        if (consume(";")) {
+            node->rel = NULL;
+        } else {
+            node->rel = expr();
+            expect(";");
+        }
+        if (consume(")")) {
+            node->upd = NULL;
+        } else {
+            node->upd = expr();
+            expect(")");
+        }
         node->rhs = stmt();
         return node;
     } else {

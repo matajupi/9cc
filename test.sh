@@ -74,4 +74,8 @@ assert 10 "num = 10; if (num > 0) if (num == 10) return 10;"
 assert 10 "p = 0; while (10 > p) p = p + 1; return p;"
 assert 10 "p = 0; while (1) if (p == 10) return p; else p = p + 1;"
 
+assert 10 "p = 0; for (i = 0; 10 > i; i = i + 1) p = p + 1; return p;"
+assert 100 "p = 0; for (i = 0; 10 > i; i = i + 1) for (j = 0; 10 > j; j = j + 1) p = p + 1; return p;"
+assert 10 "p = 0; for (i = 100; 0 < i; i = i - 1) if (i == 90) return p; else p = p + 1;"
+
 echo OK

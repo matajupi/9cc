@@ -88,6 +88,12 @@ void tokenize(char *p) {
             p += 5;
             continue;
         }
+        // for statement
+        if (startswith(p, "for") && !is_alnum(p[3])) {
+            cur = new_token(TK_FOR, cur, p, 3);
+            p += 3;
+            continue;
+        }
         // return keyword
         if (startswith(p, "return") && !is_alnum(p[6])) {
             cur = new_token(TK_RETURN, cur, p, 6);

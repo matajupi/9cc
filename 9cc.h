@@ -21,6 +21,7 @@ typedef enum {
     ND_IF,     // if keyword
     ND_ELSE,   // else keyword
     ND_WHILE,  // while keyword
+    ND_FOR,    // for keyword
     ND_LVAR, // Lcoal variable
     ND_NUM, // Integer
 } NodeKind;
@@ -33,6 +34,7 @@ struct Node {
     Node *lhs;     // left side
     Node *rhs;     // right side
     Node *rel;     // relational node
+    Node *upd;     // update node
     int val;       // Use only when kind is ND_NUM
     int offset;    // Use only when kind is ND_LVAR
 };
@@ -45,6 +47,7 @@ typedef enum {
     TK_IF,       // if keyword
     TK_ELSE,     // else keyword
     TK_WHILE,    // while keyword
+    TK_FOR,      // for keyword
     TK_NUM,      // Number
     TK_EOF,      // End of file
 } TokenKind;
