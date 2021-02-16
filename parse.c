@@ -98,7 +98,7 @@ void program() {
 
 // stmt = expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
-//      //| "while" "(" expr ")" stmt
+//      | "while" "(" expr ")" stmt
 //      //| "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      //| "return" expr ";"
 Node *stmt() {
@@ -120,6 +120,12 @@ Node *stmt() {
             rel->lhs = stmt();
             node->rel = rel;
         }
+        return node;
+    } else if (consume_type(TK_WHILE)) {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_WHILE;
+        node->lhs = expr();
+        node->rhs = stmt();
         return node;
     } else {
         node = expr();

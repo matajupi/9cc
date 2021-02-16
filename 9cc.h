@@ -20,6 +20,7 @@ typedef enum {
     ND_RETURN, // return keyword
     ND_IF,     // if keyword
     ND_ELSE,   // else keyword
+    ND_WHILE,  // while keyword
     ND_LVAR, // Lcoal variable
     ND_NUM, // Integer
 } NodeKind;
@@ -43,6 +44,7 @@ typedef enum {
     TK_RETURN,   // return keyword
     TK_IF,       // if keyword
     TK_ELSE,     // else keyword
+    TK_WHILE,    // while keyword
     TK_NUM,      // Number
     TK_EOF,      // End of file
 } TokenKind;

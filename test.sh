@@ -71,4 +71,7 @@ assert 10 "num = 10; if (num == 3) return 3; else if (num == 4) return 4; else i
 assert 10 "num = 10; if (num > 0) if (num == 1) return 1; else return 10;"
 assert 10 "num = 10; if (num > 0) if (num == 10) return 10;"
 
+assert 10 "p = 0; while (10 > p) p = p + 1; return p;"
+assert 10 "p = 0; while (1) if (p == 10) return p; else p = p + 1;"
+
 echo OK
