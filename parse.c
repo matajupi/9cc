@@ -86,7 +86,7 @@ Node *primary();
 
 Node *code[100];
 
-// program = expr*
+// program = stmt*
 void program() {
     int i = 0;
     LVar *head = calloc(1, sizeof(LVar));
@@ -96,7 +96,11 @@ void program() {
     code[i] = NULL;
 }
 
-// stmt = expr ";" | return expr ";"
+// stmt = expr ";"
+//      | "if" "(" expr ")" stmt //("else" stmt)?
+//      //| "while" "(" expr ")" stmt
+//      //| "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//      //| "return" expr ";"
 Node *stmt() {
     Node *node ;
 
@@ -104,6 +108,12 @@ Node *stmt() {
         node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
         node->lhs = expr();
+    } else if (consume_type(TK_IF)) {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_IF;
+        node->lhs = expr();
+        node->rhs = stmt();
+        return node;
     } else {
         node = expr();
     }

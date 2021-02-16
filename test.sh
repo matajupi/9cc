@@ -61,4 +61,7 @@ assert 10 "return 10;"
 assert 100 "num = 10; mul = 10; return num * mul;"
 assert 100 "return 10 * 10;"
 
+assert 10 "if (1) return 10; return 3;"
+assert 10 "if (0) return 9; return 10;"
+
 echo OK

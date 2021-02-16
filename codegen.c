@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+long if_unique_number = 0;
+
 static void gen_lval(Node *node) {
     if (node->kind != ND_LVAR)
         error("代入の左辺値が変数ではありません");
@@ -42,7 +44,14 @@ void gen(Node *node) {
         printf("    mov rsp, rbp\n");
         printf("    pop rbp\n");
         printf("    ret \n");
-        // TODO: Assert
+        return;
+    case ND_IF:
+        gen(node->lhs);
+        printf("    pop rax\n");
+        printf("    cmp rax, 0\n");
+        printf("    je .Lend%ld\n", if_unique_number);
+        gen(node->rhs);
+        printf(".Lend%ld:\n", if_unique_number++);
         return;
     }
 

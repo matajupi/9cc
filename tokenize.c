@@ -70,6 +70,13 @@ void tokenize(char *p) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
+        // if statement
+        if (startswith(p, "if") && !is_alnum(p[2])) {
+            cur = new_token(TK_IF, cur, p, 2);
+            p += 2;
+            continue;
+        }
+        // return keyword
         if (startswith(p, "return") && !is_alnum(p[6])) {
             cur = new_token(TK_RETURN, cur, p, 6);
             p += 6;
