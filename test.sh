@@ -55,5 +55,10 @@ assert 100 "b = 10; c = b * 100; d = c / b;"
 assert 10 "num = 10;"
 assert 20 "num = 10; ans = num * 2;"
 assert 90 "num = 100; sub = 10; ans = num - sub;"
+assert 100 "num = 10; num = num * 10;"
+
+assert 10 "return 10;"
+assert 100 "num = 10; mul = 10; return num * mul;"
+assert 100 "return 10 * 10;"
 
 echo OK

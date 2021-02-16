@@ -17,6 +17,7 @@ typedef enum {
     ND_LT,  // <
     ND_LE,  // <=
     ND_ASSIGN, // =
+    ND_RETURN, // return keyword
     ND_LVAR, // Lcoal variable
     ND_NUM, // Integer
 } NodeKind;
@@ -36,6 +37,7 @@ struct Node {
 typedef enum {
     TK_RESERVED, // Symbol
     TK_IDENT,    // Identifier
+    TK_RETURN,
     TK_NUM,      // Number
     TK_EOF,      // End of file
 } TokenKind;

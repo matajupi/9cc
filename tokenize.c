@@ -44,7 +44,7 @@ static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 }
 
 void tokenize(char *p);
-static bool is_var(char c);
+static int is_alnum(char c);
 
 // Tokenize 1line and return linking list
 void tokenize(char *p) {
@@ -70,6 +70,11 @@ void tokenize(char *p) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
+        if (startswith(p, "return") && !is_alnum(p[6])) {
+            cur = new_token(TK_RETURN, cur, p, 6);
+            p += 6;
+            continue;
+        }
         // Integer literal
         if (isdigit(*p)) {
             cur = new_token(TK_NUM, cur, p, 0);
@@ -80,10 +85,10 @@ void tokenize(char *p) {
             continue;
         }
         // Identifier (OK)
-        if (is_var(*p)) {
+        if (is_alnum(*p)) {
             int len = 1;
             cur = new_token(TK_IDENT, cur, p++, len);
-            for (; is_var(*p) || '0' <= *p && *p <= '9'; p++) len++;
+            for (; is_alnum(*p); p++) len++;
             cur->len = len;
             continue;
         }
@@ -95,8 +100,9 @@ void tokenize(char *p) {
     token = head.next;
 }
 
-static bool is_var(char c) {
-    return ('a' <= c && c <= 'z' ||
-            'A' <= c && c <= 'Z' ||
-            c == '_');
+static int is_alnum(char c) {
+    return ('a' <= c && c <= 'z') ||
+            ('A' <= c && c <= 'Z') ||
+            ('0' <= c && c <= '9') ||
+            (c == '_');
 }

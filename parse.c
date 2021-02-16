@@ -11,8 +11,8 @@ static bool consume(char *op) {
     return true;
 }
 
-static Token *consume_ident() {
-    if (token->kind != TK_IDENT)
+static Token *consume_type(TokenKind tk) {
+    if (token->kind != tk)
         return NULL;
     Token *retval = token;
     token = token->next;
@@ -96,9 +96,17 @@ void program() {
     code[i] = NULL;
 }
 
-// stmt = expr ";"
+// stmt = expr ";" | return expr ";"
 Node *stmt() {
-    Node *node = expr();
+    Node *node ;
+
+    if (consume_type(TK_RETURN)) {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_RETURN;
+        node->lhs = expr();
+    } else {
+        node = expr();
+    }
     expect(";");
     return node;
 }
@@ -192,7 +200,7 @@ Node *primary() {
         expect(")");
         return node;
     }
-    Token *tok = consume_ident();
+    Token *tok = consume_type(TK_IDENT);
     if (tok) { 
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_LVAR;
