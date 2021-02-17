@@ -256,7 +256,7 @@ Node *unary() {
 }
 
 // primary = num 
-//          | ident ("(" ")")?
+//          | ident ("(" expr* ")")?
 //          | "(" expr ")"
 Node *primary() {
     if (consume("(")) {
@@ -271,7 +271,19 @@ Node *primary() {
             node->kind = ND_FNCALL;
             memcpy(node->str, tok->str, tok->len);
             (node->str)[tok->len] = '\0';
-            expect(")");
+            if (consume(")")) {
+                node->val = 0;
+                return node;
+            }
+            int i;
+            for (i = 0; ; i++) {
+                node->block[i] = expr();
+                if (consume(")")) {
+                    break;
+                }
+                expect(",");
+            }
+            node->val = ++i;
             return node;
         }
         node->kind = ND_LVAR;

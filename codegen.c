@@ -28,6 +28,15 @@ void gen(Node *node) {
         printf("    push rax\n");
         return;
     case ND_FNCALL:
+        for (int i = 0; node->val > i; i++) {
+            gen(node->block[i]);
+        }
+        if (node->val >= 6) printf("    pop r9\n");
+        if (node->val >= 5) printf("    pop r8\n");
+        if (node->val >= 4) printf("    pop rcx\n");
+        if (node->val >= 3) printf("    pop rdx\n");
+        if (node->val >= 2) printf("    pop rsi\n");
+        if (node->val >= 1) printf("    pop rdi\n");
         printf("    call %s\n", node->str);
         return;
     case ND_ASSIGN:
