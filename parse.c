@@ -100,7 +100,8 @@ void program() {
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
-//      //| "return" expr ";"
+//      | "return" expr ";"
+//      | "{" stmt* "}"
 Node *stmt() {
     Node *node ;
 
@@ -154,6 +155,16 @@ Node *stmt() {
             expect(")");
         }
         node->rhs = stmt();
+        return node;
+    } else if (consume("{")) {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+        int count = 0;
+        while (!consume("}")) {
+            node->block[count] = stmt();
+            count++;
+        }
+        node->block[count] = NULL;
         return node;
     } else {
         node = expr();

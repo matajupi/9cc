@@ -78,4 +78,9 @@ assert 10 "p = 0; for (i = 0; 10 > i; i = i + 1) p = p + 1; return p;"
 assert 100 "p = 0; for (i = 0; 10 > i; i = i + 1) for (j = 0; 10 > j; j = j + 1) p = p + 1; return p;"
 assert 10 "p = 0; for (i = 100; 0 < i; i = i - 1) if (i == 90) return p; else p = p + 1;"
 
+assert 10 "p = 0; for (i = 0; 10 > i; i = i + 1) { p = p + 1; } return p;"
+assert 20 "p = 0; for (i = 0; 10 > i; i = i + 1) { p = p + 1; p = p + 1; } return p;"
+assert 10 "p = 9; if (p == 9) { p = p + 1; return p; } return 0;"
+assert 10 "p = 0; while (p != 10) { p = p + 1; } return p;"
+
 echo OK

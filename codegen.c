@@ -14,6 +14,7 @@ static void gen_lval(Node *node) {
 
 void gen(Node *node) {
     int pnum;
+    int count;
     switch (node->kind) {
     case ND_NUM:
         printf("    push %d\n", node->val);
@@ -85,6 +86,13 @@ void gen(Node *node) {
         gen(node->upd);
         printf("    jmp .Lbegin%d\n", pnum);
         printf(".Lend%d:\n", pnum);
+        return;
+    case ND_BLOCK:
+        count = 0;
+        while (node->block[count]) {
+            gen(node->block[count]);
+            count++;
+        }
         return;
     }
 

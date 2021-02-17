@@ -23,6 +23,7 @@ typedef enum {
     ND_WHILE,  // while keyword
     ND_FOR,    // for keyword
     ND_LVAR, // Lcoal variable
+    ND_BLOCK, // Block
     ND_NUM, // Integer
 } NodeKind;
 
@@ -35,6 +36,7 @@ struct Node {
     Node *rhs;     // right side
     Node *rel;     // relational node
     Node *upd;     // update node
+    Node *block[100]; // Use only when kind is ND_BLOCK
     int val;       // Use only when kind is ND_NUM
     int offset;    // Use only when kind is ND_LVAR
 };
