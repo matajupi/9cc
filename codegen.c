@@ -27,6 +27,9 @@ void gen(Node *node) {
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
         return;
+    case ND_FNCALL:
+        printf("    call %s\n", node->str);
+        return;
     case ND_ASSIGN:
         // 変数のアドレスを積む
         gen_lval(node->lhs);

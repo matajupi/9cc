@@ -255,7 +255,9 @@ Node *unary() {
     return primary();
 }
 
-// primary = num | ident | "(" expr ")"
+// primary = num 
+//          | ident ("(" ")")?
+//          | "(" expr ")"
 Node *primary() {
     if (consume("(")) {
         Node *node = expr();
@@ -265,6 +267,13 @@ Node *primary() {
     Token *tok = consume_type(TK_IDENT);
     if (tok) { 
         Node *node = calloc(1, sizeof(Node));
+        if (consume("(")) {
+            node->kind = ND_FNCALL;
+            memcpy(node->str, tok->str, tok->len);
+            (node->str)[tok->len] = '\0';
+            expect(")");
+            return node;
+        }
         node->kind = ND_LVAR;
 
         LVar *lvar = find_lvar(tok);
