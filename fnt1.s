@@ -4,22 +4,22 @@ main:
     push rbp
     mov rbp, rsp
     sub rsp, 208
-    push 1
-    push 1
-    pop rsi
-    pop rdi
-    mov rbx, rdx
     mov rax, rsp
-    mov rcx, 16
+    mov rbx, 16
     cqo
-    idiv rcx
+    idiv rbx
     cmp rdx, 0
     je .Lend0
     mov rax, 8
-    add rsp, rax
+    sub rsp, rax
 .Lend0:
-    mov rdx, rbx
-    call huga
+    push 2
+    push 2
+    push 2
+    pop rdx
+    pop rsi
+    pop rdi
+    call foo
     pop rax
     mov rsp, rbp
     pop rbp

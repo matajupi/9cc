@@ -86,7 +86,7 @@ Node *primary();
 
 Node *code[100];
 
-// program = stmt*
+// program = func*
 void program() {
     int i = 0;
     LVar *head = calloc(1, sizeof(LVar));
@@ -94,6 +94,11 @@ void program() {
     while (!at_eof())
         code[i++] = stmt();
     code[i] = NULL;
+}
+
+// func = ident "(" // ident* ")" stmt
+Node *func() {
+
 }
 
 // stmt = expr ";"

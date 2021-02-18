@@ -29,6 +29,15 @@ void gen(Node *node) {
         return;
     case ND_FNCALL:
         pnum = unique_number++;
+        printf("    mov rax, rsp\n");
+        printf("    mov rbx, 16\n");
+        printf("    cqo\n");
+        printf("    idiv rbx\n");
+        printf("    cmp rdx, 0\n");
+        printf("    je .Lend%d\n", pnum);
+        printf("    mov rax, 8\n");
+        printf("    sub rsp, rax\n");
+        printf(".Lend%d:\n", pnum);
         for (int i = 0; node->val > i; i++) {
             gen(node->block[i]);
         }
@@ -38,17 +47,6 @@ void gen(Node *node) {
         if (node->val >= 3) printf("    pop rdx\n");
         if (node->val >= 2) printf("    pop rsi\n");
         if (node->val >= 1) printf("    pop rdi\n");
-        printf("    mov rbx, rdx\n");
-        printf("    mov rax, rsp\n");
-        printf("    mov rcx, 16\n");
-        printf("    cqo\n");
-        printf("    idiv rcx\n");
-        printf("    cmp rdx, 0\n");
-        printf("    je .Lend%d\n", pnum);
-        printf("    mov rax, 8\n");
-        printf("    add rsp, rax\n");
-        printf(".Lend%d:\n", pnum);
-        printf("    mov rdx, rbx\n");
         printf("    call %s\n", node->str);
         return;
     case ND_ASSIGN:
