@@ -2,3 +2,5 @@
 (ex1.s: 自分で生成したアセンブラ, ex2.c: 別のC言語ファイル)
 $ cc -c ex2.c
 $ cc -o example ex1.s ex2.o
+
+TODO: Test用プログラムのテストとMakefileの変更

@@ -9,3 +9,8 @@ int huga(int a, int b) {
     printf("Hello world%d\n", a + b);
     return 0;
 }
+
+int one(int a) {
+    printf("%d\n", a);
+    return 0;
+}

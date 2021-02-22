@@ -2,16 +2,18 @@
 
 int unique_number = 0;
 
+// Get the address of the variable and store it in the 
+// "rax" register.
 static void gen_lval(Node *node) {
     if (node->kind != ND_LVAR)
         error("代入の左辺値が変数ではありません");
 
-    // ベースポインタより変数のアドレスを計算
+    // Compute the address from the base pointer
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
-    printf("    push rax\n");
 }
 
+// Generater assembly from node.
 void gen(Node *node) {
     int pnum;
     int count;
@@ -20,12 +22,37 @@ void gen(Node *node) {
         printf("    push %d\n", node->val);
         return;
     case ND_LVAR:
-        // 変数のアドレスを取得
         gen_lval(node);
-        printf("    pop rax\n");
-        // アドレスに入っている値を取得して積む
+        // Get the value from the address and push it onto the stack
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
+        return;
+    case ND_FNDEF:
+        printf("%s:\n", node->str);
+        // Prologue
+        printf("    push rbp\n");
+        printf("    mov rbp, rsp\n");
+
+        // Get parameters and assign
+        int i = 0;
+        for (; node->nodes[i]; i++) {
+            gen_lval(node->nodes[i]);
+            if (i == 5) printf("    mov [rax], r9\n");
+            if (i == 4) printf("    mov [rax], r8\n");
+            if (i == 3) printf("    mov [rax], rcx\n");
+            if (i == 2) printf("    mov [rax], rdx\n");
+            if (i == 1) printf("    mov [rax], rsi\n");
+            if (i == 0) printf("    mov [rax], rdi\n");
+        }
+
+        gen(node->nodes[++i]);
+
+        // Epilogue
+        // 評価結果のスタックをポップ
+        printf("    pop rax\n");
+        printf("    mov rsp, rbp\n");
+        printf("    pop rbp\n");
+        printf("    ret\n");
         return;
     case ND_FNCALL:
         pnum = unique_number++;
@@ -35,35 +62,41 @@ void gen(Node *node) {
         printf("    idiv rbx\n");
         printf("    cmp rdx, 0\n");
         printf("    je .Lend%d\n", pnum);
-        printf("    mov rax, 8\n");
-        printf("    sub rsp, rax\n");
+        printf("    sub rsp, 8\n");
         printf(".Lend%d:\n", pnum);
-        for (int i = 0; node->val > i; i++) {
-            gen(node->block[i]);
+
+        // Set real parameters
+        for (int i = 0; node->nodes[i]; i++) {
+            gen(node->nodes[i]);
+            if (i == 5) printf("    pop r9\n");
+            if (i == 4) printf("    pop r8\n");
+            if (i == 3) printf("    pop rcx\n");
+            if (i == 2) printf("    pop rdx\n");
+            if (i == 1) printf("    pop rsi\n");
+            if (i == 0) printf("    pop rdi\n");
         }
-        if (node->val >= 6) printf("    pop r9\n");
-        if (node->val >= 5) printf("    pop r8\n");
-        if (node->val >= 4) printf("    pop rcx\n");
-        if (node->val >= 3) printf("    pop rdx\n");
-        if (node->val >= 2) printf("    pop rsi\n");
-        if (node->val >= 1) printf("    pop rdi\n");
+
         printf("    call %s\n", node->str);
+        printf("    push rax\n");
         return;
     case ND_ASSIGN:
-        // 変数のアドレスを積む
-        gen_lval(node->lhs);
-        // 右辺の値を積む
-        gen(node->rhs);
+        // Push the address of the variable on the left side onto the stack
+        gen_lval(node->nodes[0]);
+        printf("    push rax\n");
+
+        // Push the value of right side onto the stack.
+        gen(node->nodes[1]);
         
-        // 値の取り出し
+        // Pop the address and value and assign
         printf("    pop rdi\n");
         printf("    pop rax\n");
-        // 左辺の変数のアドレス空間に右辺の値を代入
         printf("    mov [rax], rdi\n");
         printf("    push rdi\n");
         return;
     case ND_RETURN:
-        gen(node->lhs);
+        gen(node->nodes[0]);
+
+        // Epilogue
         printf("    pop rax\n");
         printf("    mov rsp, rbp\n");
         printf("    pop rbp\n");
@@ -71,55 +104,60 @@ void gen(Node *node) {
         return;
     case ND_IF:
         pnum = unique_number++;
-        gen(node->lhs);
+        gen(node->nodes[0]);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lelse%d\n", pnum);
-        gen(node->rhs);
+        gen(node->nodes[1]);
         printf("    jmp .Lend%d\n", pnum);
         printf(".Lelse%d:\n", pnum);
-        if (node->rel)
-            gen(node->rel);
+        if (node->nodes[2])
+            gen(node->nodes[2]);
         printf(".Lend%d:\n", pnum);
         return;
     case ND_ELSE:
-        gen(node->lhs);
+        gen(node->nodes[0]);
         return;
     case ND_WHILE:
         pnum = unique_number++;
         printf(".Lbegin%d:", pnum);
-        gen(node->lhs);
+        gen(node->nodes[0]);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lend%d\n", pnum);
-        gen(node->rhs);
+        gen(node->nodes[1]);
         printf("    jmp .Lbegin%d\n", pnum);
         printf(".Lend%d:\n", pnum);
         return;
     case ND_FOR:
         pnum = unique_number++;
-        gen(node->lhs);
+        if (node->nodes[0])
+            gen(node->nodes[0]);
         printf(".Lbegin%d:\n", pnum);
-        gen(node->rel);
-        printf("    pop rax\n");
-        printf("    cmp rax, 0\n");
-        printf("    je .Lend%d\n", pnum);
-        gen(node->rhs);
-        gen(node->upd);
+        if (node->nodes[1]) {
+            gen(node->nodes[1]);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je .Lend%d\n", pnum);
+        }
+        gen(node->nodes[3]);
+        if (node->nodes[2])
+            gen(node->nodes[2]);
         printf("    jmp .Lbegin%d\n", pnum);
         printf(".Lend%d:\n", pnum);
         return;
     case ND_BLOCK:
         count = 0;
-        while (node->block[count]) {
-            gen(node->block[count]);
-            count++;
+        for (int i = 0; node->nodes[i]; i++) {
+            gen(node->nodes[i]);
+            printf("    pop rax\n");
         }
+        printf("    push rax\n");
         return;
     }
 
-    gen(node->lhs);
-    gen(node->rhs);
+    gen(node->nodes[0]);
+    gen(node->nodes[1]);
 
     printf("    pop rdi\n");
     printf("    pop rax\n");

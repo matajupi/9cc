@@ -5,44 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Type of abstract syntax tree node
-// >, >= は <, <= の左右の項を入れ替える
-typedef enum {
-    ND_ADD, // +
-    ND_SUB, // -
-    ND_MUL, // *
-    ND_DIV, // /
-    ND_EQ,  // ==
-    ND_NE,  // !=
-    ND_LT,  // <
-    ND_LE,  // <=
-    ND_ASSIGN, // =
-    ND_RETURN, // return keyword
-    ND_IF,     // if keyword
-    ND_ELSE,   // else keyword
-    ND_WHILE,  // while keyword
-    ND_FOR,    // for keyword
-    ND_LVAR, // Lcoal variable
-    ND_FNCALL, // Function call
-    ND_BLOCK, // Block
-    ND_NUM, // Integer
-} NodeKind;
-
-typedef struct Node Node;
-
-// Abstract syntax tree node
-struct Node {
-    NodeKind kind; // node type
-    Node *lhs;     // left side
-    Node *rhs;     // right side
-    Node *rel;     // relational node
-    Node *upd;     // update node
-    Node *block[100]; // Use only when kind is ND_BLOCK
-    int val;       // Use only when kind is ND_NUM
-    char str[100];    // Use only when kind is ND_FNCALL
-    int offset;    // Use only when kind is ND_LVAR
-};
-
 // Type of token
 typedef enum {
     TK_RESERVED, // Symbol
@@ -67,6 +29,40 @@ struct Token {
     int len;        // Length of token
 };
 
+// Type of abstract syntax tree node
+typedef enum {
+    ND_ADD, // +
+    ND_SUB, // -
+    ND_MUL, // *
+    ND_DIV, // /
+    ND_EQ,  // ==
+    ND_NE,  // !=
+    ND_LT,  // <
+    ND_LE,  // <=
+    ND_ASSIGN, // =
+    ND_RETURN, // return keyword
+    ND_IF,     // if keyword
+    ND_ELSE,   // else keyword
+    ND_WHILE,  // while keyword
+    ND_FOR,    // for keyword
+    ND_LVAR, // Lcoal variable
+    ND_FNCALL, // Function call
+    ND_BLOCK, // Block
+    ND_FNDEF,  // Function definition
+    ND_NUM, // Integer
+} NodeKind;
+
+typedef struct Node Node;
+
+// Abstract syntax tree node
+struct Node {
+    NodeKind kind; // node type
+    Node *nodes[512]; // Nodes
+    int val;       // Value
+    int offset;    // Variable offset
+    char str[64];  // Name
+};
+
 typedef struct LVar LVar;
 
 // Type of Local variable.
@@ -77,7 +73,6 @@ struct LVar {
     int offset; //Offset from RBP
 };
 
-// Local variable.
 extern LVar *locals;
 
 // Input program
