@@ -11,6 +11,10 @@ static void gen_lval(Node *node) {
     // Compute the address from the base pointer
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
+    if (node->is_definition) {
+            printf("    sub rsp, 8\n");
+    }
+    printf("    push rax\n");
 }
 
 // Generater assembly from node.
@@ -24,6 +28,7 @@ void gen(Node *node) {
     case ND_LVAR:
         gen_lval(node);
         // Get the value from the address and push it onto the stack
+        printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
         return;
@@ -82,7 +87,6 @@ void gen(Node *node) {
     case ND_ASSIGN:
         // Push the address of the variable on the left side onto the stack
         gen_lval(node->nodes[0]);
-        printf("    push rax\n");
 
         // Push the value of right side onto the stack.
         gen(node->nodes[1]);

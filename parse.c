@@ -377,12 +377,15 @@ Node *ident(Token *tok) {
     LVar *lvar = find_lvar(tok);
     if (lvar) {
         node->offset = lvar->offset;
+        node->is_definition = 0;
     } else {
         lvar = calloc(1, sizeof(LVar));
         lvar->next = locals;
         lvar->name = tok->str;
+        lvar->len = tok->len;
         lvar->offset = locals->offset + 8;
         node->offset = lvar->offset;
+        node->is_definition = 1;
         locals = lvar;
     }
     return node;

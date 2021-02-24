@@ -75,7 +75,7 @@ class Assertion:
                 print(f"Line {i + 1}")
                 print(f"result:")
                 print(res[i])
-                print(f"ideal")
+                print(f"ideal:")
                 print(com[i])
                 exit(1)
 

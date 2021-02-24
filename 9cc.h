@@ -61,6 +61,7 @@ struct Node {
     int val;       // Value
     int offset;    // Variable offset
     char str[64];  // Name
+    int is_definition;    // Whether to define
 };
 
 typedef struct LVar LVar;
