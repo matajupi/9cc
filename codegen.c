@@ -42,6 +42,7 @@ void gen(Node *node) {
         int i = 0;
         for (; node->nodes[i]; i++) {
             gen_lval(node->nodes[i]);
+            printf("    pop rax\n");
             if (i == 5) printf("    mov [rax], r9\n");
             if (i == 4) printf("    mov [rax], r8\n");
             if (i == 3) printf("    mov [rax], rcx\n");
@@ -65,10 +66,14 @@ void gen(Node *node) {
         printf("    mov rbx, 16\n");
         printf("    cqo\n");
         printf("    idiv rbx\n");
+        printf("    mov rax, rsp\n");
         printf("    cmp rdx, 0\n");
-        printf("    je .Lend%d\n", pnum);
+        printf("    je .Lsub%d\n", pnum);
+        printf("    jmp .Lend%d\n", pnum);
+        printf(".Lsub%d:\n", pnum);
         printf("    sub rsp, 8\n");
         printf(".Lend%d:\n", pnum);
+        printf("    push rax\n");
 
         // Set real parameters
         for (int i = 0; node->nodes[i]; i++) {
@@ -82,6 +87,7 @@ void gen(Node *node) {
         }
 
         printf("    call %s\n", node->str);
+        printf("    pop rsp\n");
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
@@ -152,11 +158,8 @@ void gen(Node *node) {
         return;
     case ND_BLOCK:
         count = 0;
-        for (int i = 0; node->nodes[i]; i++) {
+        for (int i = 0; node->nodes[i]; i++)
             gen(node->nodes[i]);
-            printf("    pop rax\n");
-        }
-        printf("    push rax\n");
         return;
     }
 

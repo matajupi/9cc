@@ -2,6 +2,9 @@ main() {
     n = 3;
     m = 4;
     neko(n, m);
+    n = 3;
+    m = 4;
+    neko(n, m);
 }
 
 neko(n, m) {
