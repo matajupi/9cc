@@ -2,8 +2,7 @@
 
 int unique_number = 0;
 
-// Get the address of the variable and store it in the 
-// "rax" register.
+// Get the address of the variable and push it onto the stack.
 static void gen_lval(Node *node) {
     if (node->kind != ND_LVAR)
         error("代入の左辺値が変数ではありません");
@@ -24,6 +23,15 @@ void gen(Node *node) {
     switch (node->kind) {
     case ND_NUM:
         printf("    push %d\n", node->val);
+        return;
+    case ND_ADDR:
+        gen_lval(node->nodes[0]);
+        return;
+    case ND_DEREF:
+        gen(node->nodes[0]);
+        printf("    pop rax\n");
+        printf("    mov rax, [rax]\n");
+        printf("    push rax\n");
         return;
     case ND_LVAR:
         gen_lval(node);

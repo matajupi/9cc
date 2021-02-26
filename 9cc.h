@@ -16,6 +16,7 @@ typedef enum {
     TK_FOR,      // for keyword
     TK_NUM,      // Number
     TK_EOF,      // End of file
+    TK_TYPE,     // Variable type
 } TokenKind;
 
 typedef struct Token Token;
@@ -50,6 +51,8 @@ typedef enum {
     ND_BLOCK, // Block
     ND_FNDEF,  // Function definition
     ND_NUM, // Integer
+    ND_ADDR, // Address
+    ND_DEREF, // Dereference
 } NodeKind;
 
 typedef struct Node Node;
@@ -62,6 +65,7 @@ struct Node {
     int offset;    // Variable offset
     char str[64];  // Name
     int is_definition;    // Whether to define
+    char rettype[64]; // return type
 };
 
 typedef struct LVar LVar;

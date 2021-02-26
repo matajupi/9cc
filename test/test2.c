@@ -1,4 +1,5 @@
-main() {
-    n = 3;
+int main() {
+    int n = 3;
     one(n);
+    return 0;
 }

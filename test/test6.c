@@ -1,12 +1,14 @@
-main() {
-    n = 3;
-    m = 4;
+int main() {
+    int n = 3;
+    int m = 4;
     neko(n, m);
-    n = 3;
-    m = 4;
+    n = 4;
+    m = 3;
     neko(n, m);
+    return 0;
 }
 
-neko(n, m) {
+int neko(int n, int m) { 
     one(n + m);
+    return 0;
 }

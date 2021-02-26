@@ -61,7 +61,6 @@ static bool at_eof() {
     return token->kind == TK_EOF;
 }
 
-
 static Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 static Node *new_node_num(int val);
 
@@ -99,6 +98,8 @@ static LVar *find_lvar(Token *tok) {
 }
 
 
+
+
 void program();
 Node *func();
 Node *block();
@@ -112,6 +113,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 Node *ident();
+Node *defvar();
 
 // All nodes
 Node *code[100];
@@ -127,15 +129,27 @@ void program() {
     code[i] = NULL;
 }
 
-// func = ident "(" ident* ")" block
+// func = type ident "(" (type ident)* ")" block
 // ND_FNDEF nodes = {ident*(parameters), NULL, block}
 Node *func() {
     // Initialize node
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FNDEF;
 
+    // 型チェックしてない
+    Token *tok = consume_kind(TK_TYPE);
+    if (!tok) {
+        error("syntax error");
+    }
+    if (tok->len == 3 && !memcmp(tok->str, "int", 3)) {
+        memcpy(node->rettype, tok->str, 3);
+        node->rettype[3] = '\0';
+    } else {
+        error("Type error");
+    }
+
     // Set node name
-    Token *tok = consume_kind(TK_IDENT);
+    tok = consume_kind(TK_IDENT);
     memcpy(node->str, tok->str, tok->len);
     (node->str)[tok->len] = '\0';
 
@@ -149,8 +163,8 @@ Node *func() {
     int i = 0;
     node->nodes[0] = NULL;
     for (; !consume(")"); i++) {
-        Token *tok = consume_kind(TK_IDENT);
-        node->nodes[i] = ident(tok);
+        Token *tok = consume_kind(TK_TYPE);
+        node->nodes[i] = defvar(tok);
         if (!consume(","))
             node->nodes[i + 1] = NULL;
     }
@@ -328,30 +342,72 @@ Node *mul() {
     }
 }
 
-// unary = ("+" | "-")* primary
+// unary = "+" unary
+//       | "-" unary
+//       | "*" unary
+//       | "&" unary
+//       | primary
 Node *unary() {
     if (consume("+"))
         return unary();
     if (consume("-"))
         // 0 - num
         return new_node(ND_SUB, new_node_num(0), unary());
+    if (consume("*"))
+        return new_node(ND_DEREF, unary(), NULL);
+    if (consume("&"))
+        return new_node(ND_ADDR, unary(), NULL);
     return primary();
 }
 
 // primary = num 
 //          | ident ("(" expr* ")")?
 //          | "(" expr ")"
+//          | type ident
 Node *primary() {
     if (consume("(")) {
         Node *node = expr();
         expect(")");
         return node;
     }
-    Token *tok = consume_kind(TK_IDENT);
+    Token *tok = consume_kind(TK_TYPE);
+    if (tok) {
+        return defvar(tok);
+    }
+    tok = consume_kind(TK_IDENT);
     if (tok) { 
         return ident(tok);
     }
     Node *node = new_node_num(expect_number());
+    return node;
+}
+
+// Define a new variable
+Node *defvar(Token *typ) {
+    Token *tok = consume_kind(TK_IDENT);
+
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->is_definition = 1;
+
+    LVar *lvar = find_lvar(tok);
+    if (lvar) {
+        error("定義済み\n");
+    }
+
+    lvar = calloc(1, sizeof(LVar));
+    lvar->next = locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+
+    if (typ->len == 3 && !memcmp(typ->str, "int", 3)) {
+        lvar->offset = locals->offset + 8;
+        node->offset = lvar->offset;
+    } else {
+        error("Type error");
+    }
+    
+    locals = lvar;
     return node;
 }
 
@@ -374,19 +430,16 @@ Node *ident(Token *tok) {
     }
 
     node->kind = ND_LVAR;
+
     LVar *lvar = find_lvar(tok);
     if (lvar) {
         node->offset = lvar->offset;
         node->is_definition = 0;
     } else {
-        lvar = calloc(1, sizeof(LVar));
-        lvar->next = locals;
-        lvar->name = tok->str;
-        lvar->len = tok->len;
-        lvar->offset = locals->offset + 8;
-        node->offset = lvar->offset;
-        node->is_definition = 1;
-        locals = lvar;
+        char varname[64];
+        memcpy(varname, tok->str, tok->len);
+        varname[tok->len] = '\0';
+        error("変数%sは定義されていません。\n", varname);
     }
     return node;
 }

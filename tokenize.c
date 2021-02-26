@@ -66,10 +66,11 @@ void tokenize(char *p) {
                 continue;
         }
         // Single-letter punctuator
-        if (strchr("+-*/()<>;=,{}", *p)) {
+        if (strchr("+-*/()<>;=,{}&", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
+        // !is_alnumを付ける理由は変数でないことを証明するため
         // if statement
         if (startswith(p, "if") && !is_alnum(p[2])) {
             cur = new_token(TK_IF, cur, p, 2);
@@ -98,6 +99,12 @@ void tokenize(char *p) {
         if (startswith(p, "return") && !is_alnum(p[6])) {
             cur = new_token(TK_RETURN, cur, p, 6);
             p += 6;
+            continue;
+        }
+        // Type
+        if (startswith(p, "int") && !is_alnum(p[3])) {
+            cur = new_token(TK_TYPE, cur, p, 3);
+            p += 3;
             continue;
         }
         // Integer literal

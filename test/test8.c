@@ -1,12 +1,13 @@
-main() {
-    s = neko();
+int main() {
+    int s = neko();
     one(s);
+    return 0;
 }
 
-neko() {
+int neko() {
     return add() + add();
 }
 
-add() {
+int add() {
     return 3;
 }
