@@ -114,6 +114,7 @@ Node *unary();
 Node *primary();
 Node *ident();
 Node *defvar();
+Type *type();
 
 // All nodes
 Node *code[100];
@@ -141,12 +142,8 @@ Node *func() {
     if (!tok) {
         error("syntax error");
     }
-    if (tok->len == 3 && !memcmp(tok->str, "int", 3)) {
-        memcpy(node->rettype, tok->str, 3);
-        node->rettype[3] = '\0';
-    } else {
-        error("Type error");
-    }
+
+    node->rettype = type(tok);
 
     // Set node name
     tok = consume_kind(TK_IDENT);
@@ -384,31 +381,55 @@ Node *primary() {
 
 // Define a new variable
 Node *defvar(Token *typ) {
-    Token *tok = consume_kind(TK_IDENT);
+    Type *ty = type(typ);
 
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-    node->is_definition = 1;
+    Token *tok = consume_kind(TK_IDENT);
 
     LVar *lvar = find_lvar(tok);
     if (lvar) {
         error("定義済み\n");
     }
 
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->is_definition = 1;
+
     lvar = calloc(1, sizeof(LVar));
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
+    lvar->type = ty;
 
-    if (typ->len == 3 && !memcmp(typ->str, "int", 3)) {
+    switch (ty->ty) {
+    case INT:
         lvar->offset = locals->offset + 8;
-        node->offset = lvar->offset;
+        break;
+    case PTR:
+        lvar->offset = locals->offset + 8;
+        break;
+    }
+    node->offset = lvar->offset;
+
+    locals = lvar;
+    return node;
+}
+
+Type *type(Token *typ) {
+    Type *ty = calloc(1, sizeof(Type));
+    if (typ->len == 3 && !memcmp(typ->str, "int", 3)) {
+        ty->ty = INT;
+        ty->ptr_to = NULL;
     } else {
         error("Type error");
     }
-    
-    locals = lvar;
-    return node;
+
+    while (consume("*")) {
+        Type *new_ty = calloc(1, sizeof(Type));
+        new_ty->ty = PTR;
+        new_ty->ptr_to = ty;
+        ty = new_ty;
+    }
+    return ty;
 }
 
 // ident related processing

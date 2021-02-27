@@ -55,6 +55,13 @@ typedef enum {
     ND_DEREF, // Dereference
 } NodeKind;
 
+typedef struct Type Type;
+
+struct Type {
+    enum { INT, PTR } ty;
+    struct Type *ptr_to;
+};
+
 typedef struct Node Node;
 
 // Abstract syntax tree node
@@ -65,8 +72,9 @@ struct Node {
     int offset;    // Variable offset
     char str[64];  // Name
     int is_definition;    // Whether to define
-    char rettype[64]; // return type
+    Type *rettype; // return type
 };
+
 
 typedef struct LVar LVar;
 
@@ -76,7 +84,9 @@ struct LVar {
     char *name; // Name
     int len;    // Length of name
     int offset; //Offset from RBP
+    Type *type;
 };
+
 
 extern LVar *locals;
 
