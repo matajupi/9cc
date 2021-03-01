@@ -18,7 +18,7 @@ static void gen_lval(Node *node) {
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
     if (node->is_definition) {
-            printf("    sub rsp, 8\n");
+            printf("    sub rsp, %d\n", node->offset);
     }
     printf("    push rax\n");
 }
@@ -35,8 +35,7 @@ void gen(Node *node) {
         gen_lval(node->nodes[0]);
         return;
     case ND_DEREF:
-        gen(node->nodes[0]);
-        // kokoyorisitagaarukotoga issue
+        gen_lval(node);
         printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
@@ -171,6 +170,8 @@ void gen(Node *node) {
             gen(node->nodes[2]);
         printf("    jmp .Lbegin%d\n", pnum);
         printf(".Lend%d:\n", pnum);
+        return;
+    case ND_SIZEOF:
         return;
     case ND_BLOCK:
         count = 0;

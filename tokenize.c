@@ -101,6 +101,12 @@ void tokenize(char *p) {
             p += 6;
             continue;
         }
+        // sizeof keyword
+        if (startswith(p, "sizeof") && !is_alnum(p[6])) {
+            cur = new_token(TK_SIZEOF, cur, p, 6);
+            p += 6;
+            continue;
+        }
         // Type
         if (startswith(p, "int") && !is_alnum(p[3])) {
             cur = new_token(TK_TYPE, cur, p, 3);

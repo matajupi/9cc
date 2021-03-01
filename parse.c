@@ -344,6 +344,7 @@ Node *mul() {
 //       | "*" unary
 //       | "&" unary
 //       | primary
+//       | "sizeof" uanry
 Node *unary() {
     if (consume("+"))
         return unary();
@@ -354,6 +355,13 @@ Node *unary() {
         return new_node(ND_DEREF, unary(), NULL);
     if (consume("&"))
         return new_node(ND_ADDR, unary(), NULL);
+    Token *tok = consume_kind(TK_SIZEOF);
+    if (tok) {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_SIZEOF;
+        node->nodes[0] = unary();
+        return node;
+    }
     return primary();
 }
 

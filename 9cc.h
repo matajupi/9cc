@@ -17,6 +17,7 @@ typedef enum {
     TK_NUM,      // Number
     TK_EOF,      // End of file
     TK_TYPE,     // Variable type
+    TK_SIZEOF,
 } TokenKind;
 
 typedef struct Token Token;
@@ -53,6 +54,7 @@ typedef enum {
     ND_NUM, // Integer
     ND_ADDR, // Address
     ND_DEREF, // Dereference
+    ND_SIZEOF,
 } NodeKind;
 
 typedef struct Type Type;
@@ -84,7 +86,7 @@ struct LVar {
     char *name; // Name
     int len;    // Length of name
     int offset; //Offset from RBP
-    Type *type;
+    Type *type; // type
 };
 
 
